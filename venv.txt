@@ -1,0 +1,7 @@
+Run these commands one after another in your terminal:
+
+python3 -m venv venv
+
+source venv/bin/activate
+
+pip install torch torchvision diffusers datasets accelerate tensorboard tqdm numpy opencv-python matplotlib
