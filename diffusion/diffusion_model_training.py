@@ -52,29 +52,42 @@ def transform(examples):
 dataset.set_transform(transform)
 train_dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.train_batch_size, shuffle=True)
 
-model = UNet2DModel(
-    sample_size=config.image_size,  # the target image resolution
-    in_channels=3,  # the number of input channels, 3 for RGB images
-    out_channels=3,  # the number of output channels
-    layers_per_block=2,  # how many ResNet layers to use per UNet block
-    block_out_channels=(64, 64, 128, 128, 256, 256),  # the number of output channels for each UNet block, double these if you have a powerful enough computer
-    down_block_types=(
-        "DownBlock2D",  # a regular ResNet downsampling block
-        "DownBlock2D",
-        "DownBlock2D",
-        "DownBlock2D",
-        "AttnDownBlock2D",  # a ResNet downsampling block with spatial self-attention
-        "DownBlock2D",
-    ),
-    up_block_types=(
-        "UpBlock2D",  # a regular ResNet upsampling block
-        "AttnUpBlock2D",  # a ResNet upsampling block with spatial self-attention
-        "UpBlock2D",
-        "UpBlock2D",
-        "UpBlock2D",
-        "UpBlock2D",
-    ),
-)
+if config.resume_from:
+    # Fine-tuning: load the already trained model (its structure comes from its own unet/config.json,
+    # so the settings in the else-block below are ignored)
+    model = UNet2DModel.from_pretrained(config.resume_from, subfolder="unet")
+    if model.config.sample_size != config.image_size:
+        raise ValueError(
+            f"'{config.resume_from}' was trained at {model.config.sample_size}px, but image_size is {config.image_size}. "
+            f"Set image_size = {model.config.sample_size} in training_config.py."
+        )
+    print(f"Fine-tuning the model from '{config.resume_from}'")
+else:
+    # Training from scratch: build a new, untrained model
+    model = UNet2DModel(
+        sample_size=config.image_size,  # the target image resolution
+        in_channels=3,  # the number of input channels, 3 for RGB images
+        out_channels=3,  # the number of output channels
+        layers_per_block=2,  # how many ResNet layers to use per UNet block
+        block_out_channels=(64, 64, 128, 128, 256, 256),  # the number of output channels for each UNet block, double these if you have a powerful enough computer
+        down_block_types=(
+            "DownBlock2D",  # a regular ResNet downsampling block
+            "DownBlock2D",
+            "DownBlock2D",
+            "DownBlock2D",
+            "AttnDownBlock2D",  # a ResNet downsampling block with spatial self-attention
+            "DownBlock2D",
+        ),
+        up_block_types=(
+            "UpBlock2D",  # a regular ResNet upsampling block
+            "AttnUpBlock2D",  # a ResNet upsampling block with spatial self-attention
+            "UpBlock2D",
+            "UpBlock2D",
+            "UpBlock2D",
+            "UpBlock2D",
+        ),
+    )
+    print("Training a new model from scratch")
 
 def evaluate(config, epoch, pipeline):
     # Sample some images from random noise (this is the backward diffusion process).
