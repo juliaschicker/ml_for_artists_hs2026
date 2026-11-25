@@ -12,4 +12,4 @@ Monday:
 pip install torch numpy opencv-python
 
 Tuesday:
-pip install torch torchvision diffusers datasets accelerate tensorboard tqdm numpy opencv-python matplotlib
+pip install torchvision diffusers datasets accelerate tensorboard tqdm matplotlib

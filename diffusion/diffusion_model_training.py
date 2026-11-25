@@ -31,9 +31,9 @@ import os
 
 # Loading the dataset
 # First one for butterflies
-# dataset = load_dataset("huggan/smithsonian_butterflies_subset", split="train")
+dataset = load_dataset("huggan/smithsonian_butterflies_subset", split="train")
 # Second one for own data
-dataset = load_dataset("imagefolder", data_dir="my-data-0/dataset_256", split="train")
+# dataset = load_dataset("imagefolder", data_dir="my-data-0/dataset_256", split="train")
 
 preprocess = transforms.Compose([
     transforms.Resize((config.image_size, config.image_size)),
