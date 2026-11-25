@@ -1,4 +1,6 @@
 # make one "output folder" per video, e.g. "video-1"; this is where your single frames will be stored
+# the output folder has to be located in the "predictive_forgetting" folder
+
 # change the line below to include your video file name (i.e. replace "video.mp4" with whatever your video is called. Make sure the video file name does not include any spaces
 
 ffmpeg -i video.mp4 video-1/frame-%04d.jpg

@@ -33,6 +33,7 @@ Usage:
     python train_predictive_forgetting.py
 """
 
+# These are all the things the script needs; if they are not installed, you will get error messages
 import random
 from pathlib import Path
 
@@ -46,26 +47,35 @@ from predictive_forgetting_model import PredictiveForgettingAutoencoder
 
 # ─── PARAMETERS ─────────────────────────────────────────────────────────────
 
-FRAMES_DIR     = "training_footage_260917_choreo_frames"  # directory of source frames (any cv2-readable image)
+# TODO change folder name here. Folder cannot contain any spaces and must be at the same folder height as this file.
+FRAMES_DIR     = "training_footage_re"  # directory of source frames (any cv2-readable image)
+# This says which file ending the script is looking for
 FRAME_GLOB     = "*.jpg"
 
-CHECKPOINT_OUT = "predictive_forgetting_model_succ_14_260917_256_144.pt"
+# The name of your model. I usually include the parameters I used in the file name, so I know which model was trained how.
+CHECKPOINT_OUT = "predictive_forgetting_model_re_latent_dim_16_succ_3.pt"
 
 # (height, width) frames are resized to -- 16:9, both dims divisible by
 # 2^len(CHANNELS)=16 (required for the 4 stride-2 downsampling layers below).
+# TODO change this for higher resolution (it gets very slow though!; only double or half the values, otherwise it does not work)
 INPUT_SIZE     = (144, 256)
+# TODO change this for more or less layers. More will make training slower.
 CHANNELS       = [32, 64, 128, 128]  # encoder/decoder conv channel progression
-LATENT_DIM     = 96
+# TODO change this for more or less dimensions in latent space. More will make training slower.
+LATENT_DIM     = 16
 
 # Successor target y_t = mean(frames[t+1 : t+1+SUCCESSOR_WINDOW]).
 # At 25fps: 8 frames ~ 0.32s ahead. Widen this if your footage moves slowly
 # (the target should differ meaningfully from x_t -- if it barely does,
 # the successor objective has nothing to select against).
-SUCCESSOR_WINDOW      = 28          # make this as large as a multiple of a beat (e.g. 1, 2 or 4)
+# TODO change this to make the gaps between the frames it trains with larger or smaller. Frames need to have visible differences.
+SUCCESSOR_WINDOW      = 3          # make this as large as a multiple of a beat (e.g. 1, 2 or 4)
+# TODO experimental, can play around with it
 SUCCESSOR_LOSS_WEIGHT = 0.5         # experimental knob -- retune once looking at real output
 
 VAL_FRACTION   = 0.10              # held-out validation split, per paper's Methods
-BATCH_SIZE     = 16
+BATCH_SIZE     = 16                # how many frames are in one batch; the larger your working memory, the larger the batch can be. If too large, your computer will have issues.
+# TODO change this to train the model longer or shorter. Shorter is coarser. It will stop automatically if there is no progress anymore.
 EPOCHS         = 20
 LR             = 1e-3
 WEIGHT_DECAY   = 1e-4
