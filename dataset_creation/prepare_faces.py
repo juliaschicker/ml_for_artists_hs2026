@@ -2,7 +2,7 @@
 # cut out a square with the face in the centre, and give all crops the same size.
 #
 # How it works:
-#   1. Goes through INPUT_DIR: images are read directly, from videos every FRAME_STEP-th frame is used.
+#   1. Goes through INPUT_DIR: images (incl. iPhone HEIC) are read directly, from videos every FRAME_STEP-th frame is used.
 #   2. Face detection with landmarks (OpenCV's YuNet detector): for every face it finds a box
 #      plus 5 landmarks -- both eyes, the nose tip and both mouth corners.
 #   3. For every face, a square around the face centre is cut out (optionally rotated so the eyes are level).
@@ -18,6 +18,16 @@ from pathlib import Path
 import cv2
 # numpy: number arrays (OpenCV stores images as numpy arrays)
 import numpy as np
+# Pillow: used only for HEIC/HEIF photos (iPhone format), which OpenCV can't read
+from PIL import Image, ImageOps
+
+# pillow-heif teaches Pillow to open HEIC files (install with: python -m pip install pillow-heif)
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+    HEIC_SUPPORT = True
+except ImportError:
+    HEIC_SUPPORT = False
 
 
 # ----- Settings -----
@@ -40,6 +50,7 @@ DETECTION_MAX_SIDE = 1280    # big images are scaled down to this size for detec
 JPEG_QUALITY = 95
 
 IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
+HEIC_TYPES = {".heic", ".heif"}  # iPhone photos; need the pillow-heif package
 VIDEO_TYPES = {".mp4", ".mov", ".avi", ".mkv", ".m4v", ".webm"}
 
 # Face detection model (small, ~230 KB) -- downloaded automatically the first time
@@ -72,6 +83,14 @@ def iterate_sources(input_dir):
             if image is None:
                 print(f"  could not read {path.name}, skipped")
                 continue
+            yield path.stem, image
+        elif suffix in HEIC_TYPES:
+            if not HEIC_SUPPORT:
+                print(f"  {path.name} skipped: HEIC needs the pillow-heif package (python -m pip install pillow-heif)")
+                continue
+            with Image.open(path) as heic:
+                heic = ImageOps.exif_transpose(heic).convert("RGB")      # apply the phone's rotation info
+                image = cv2.cvtColor(np.array(heic), cv2.COLOR_RGB2BGR)  # Pillow uses RGB, OpenCV uses BGR
             yield path.stem, image
         elif suffix in VIDEO_TYPES:
             video = cv2.VideoCapture(str(path))
