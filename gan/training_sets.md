@@ -1,3 +1,4 @@
+<!-- Open this file on github: https://github.com/juliaschicker/ml_for_artists_hs2026/blob/main/gan/training_sets.md -->
 # Training sets for the GAN
 
 Datasets from Hugging Face that work well for GAN training:

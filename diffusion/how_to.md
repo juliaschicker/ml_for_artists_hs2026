@@ -1,3 +1,4 @@
+<!-- Open this file on github: https://github.com/juliaschicker/ml_for_artists_hs2026/blob/main/diffusion/how_to.md -->
 # 🦋🦋🦋 Diffusion model 🦋🦋🦋
 
 > **How to read this file**

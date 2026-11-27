@@ -1,3 +1,4 @@
+<!-- Open this file on github: https://github.com/juliaschicker/ml_for_artists_hs2026/blob/main/venv.md -->
 # Setting up the venv
 
 > **How to read this file**

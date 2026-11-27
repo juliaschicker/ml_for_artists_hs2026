@@ -1,3 +1,4 @@
+<!-- Open this file on github: https://github.com/juliaschicker/ml_for_artists_hs2026/blob/main/terminal_how_to.md -->
 # How to move around in the terminal
 
 > **How to read this file**
@@ -5,7 +6,7 @@
 > - Grey boxes that start with `>>>` are **commands for the terminal**.
 >   Copy only the part **after** `>>>`. **Do not copy the `>>>` itself!** Then press Enter.
 
----
+--- 
 
 ## Go one folder deeper
 

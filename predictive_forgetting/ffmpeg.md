@@ -1,3 +1,4 @@
+<!-- Open this file on github: https://github.com/juliaschicker/ml_for_artists_hs2026/blob/main/predictive_forgetting/ffmpeg.md -->
 # Splitting a video into frames with ffmpeg
 
 > **How to read this file**

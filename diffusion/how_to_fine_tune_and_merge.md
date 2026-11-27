@@ -1,4 +1,4 @@
-<!-- TODO: add the GitHub link to this file at the top -->
+<!-- Open this file on github: https://github.com/juliaschicker/ml_for_artists_hs2026/blob/main/diffusion/how_to_fine_tune_and_merge.md -->
 
 # Fine-tuning and merging diffusion models
 
