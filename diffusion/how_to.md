@@ -120,7 +120,7 @@ The number after `--seed` has to change to make new images. A different seed num
 **1.** Open `training_config.py` and change these two values:
 
 ```python
-num_epochs = 2
+num_epochs = 5
 ```
 
 We'll test again first whether we're really doing the right thing, so you don't waste as much time as I did.
@@ -141,13 +141,52 @@ Change this to match the name of your folder with the new training data. The `64
 
 This means the line is not read anymore, so the butterflies are no longer loaded.
 
-**3.** Now delete the `#` in front of **line 36**, so it looks like this:
+Now delete the `#` in front of **line 36**, so it looks like this:
 
 ```python
 dataset = load_dataset("imagefolder", data_dir="my-data-0/dataset_256", split="train")
 ```
 
 Now the script loads your data from `my-data-0/dataset_256`. If your data is in a different folder, change the path accordingly.
+
+**3.** Run a short test to check that everything is in place. In your terminal, run:
+
+```bash
+>>> python diffusion_model_training.py
+```
+
+**4.** When the five test epochs have run, generate images:
+
+```bash
+>>> python generate_images.py --model ddpm-my-data-0-64
+```
+
+> ⚠️ The name after `--model` must be the same as your `output_dir` in `training_config.py`.
+
+**5.** Check the images: do they come from the right training data?
+
+**6.** If everything is OK, go to `training_config.py` and change:
+
+```python
+num_epochs = 50
+```
+
+- If you have fewer than 1'000 images, set the epochs according to the table at the bottom of this file.
+- If your computer is very slow, go a little below the recommended epochs, so you don't have to train for that long.
+
+## Image generation
+
+**1.** Make sure there are no images in the `generated` folder. Otherwise, they will be overwritten.
+
+**2.** `python generate_images.py --seed 1` uses the butterfly model. For your own model, use this instead:
+
+```bash
+>>> python generate_images.py --model ddpm-my-data-0-64 --seed 1
+```
+
+> ⚠️ The name after `--model` must match the name of your model folder.
+
+**3.** Check the results.
 
 ---
 
