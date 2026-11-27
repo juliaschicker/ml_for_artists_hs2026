@@ -30,18 +30,18 @@ from tqdm.auto import tqdm
 
 
 # ----- Settings -----
-# DATA_DIR = "my-data"            # folder with your training images (subfolders are included)
+DATA_DIR = "my-data"            # folder with your training images (subfolders are included)
 # To train on a Hugging Face dataset instead: put a # in front of the line above and remove the # below.
 # "huggingface:" + the dataset name as shown on huggingface.co (downloaded automatically the first time).
-DATA_DIR = "huggingface:huggan/metfaces"
+# DATA_DIR = "huggingface:huggan/metfaces"
 MAX_IMAGES = None               # None = use all images. A number (e.g. 5000) = use a random selection (for big datasets)
-OUTPUT_DIR = "gan-metfaces-64-300"   # folder the model, samples and loss plot are saved to
+OUTPUT_DIR = "gan-my-data-64"   # folder the model, samples and loss plot are saved to
 
 NUM_EPOCHS = 200                # how often the whole dataset is shown. Aim for ~5'000-10'000 steps in total:
                                 # 1'000 images -> ~300-500 epochs, 5'000 images -> ~100 epochs
 BATCH_SIZE = 64                 # images per training step
 SAVE_IMAGE_EPOCHS = 10          # save a sample grid every 10 epochs
-SAVE_MODEL_EPOCHS = 50          # keep a copy of the generator every 50 epochs (in OUTPUT_DIR/snapshots)
+SAVE_MODEL_EPOCHS = 50          # keep a copy of the model every 50 epochs (in OUTPUT_DIR/snapshots)
 
 AUGMENT = True                  # DiffAugment: random colour, shift and cut-out during training.
                                 # Strongly recommended below ~5'000 images, otherwise the GAN collapses quickly.
@@ -56,7 +56,7 @@ DISCRIMINATOR_FEATURES = 64     # size of the discriminator network
 
 # Continue training an existing model: set to its file, e.g. "gan-my-data-64/gan_model.pt".
 # Works with new images too (fine-tuning). Use a NEW OUTPUT_DIR, so the old model is not overwritten.
-RESUME_FROM = "gan-metfaces-64/gan_model.pt"
+RESUME_FROM = None
 
 SEED = 0
 
@@ -246,12 +246,17 @@ def main():
                 (LATENT_SIZE, GENERATOR_FEATURES, DISCRIMINATOR_FEATURES):
             raise ValueError("LATENT_SIZE / GENERATOR_FEATURES / DISCRIMINATOR_FEATURES must be the same as in the model you resume from.")
         generator.load_state_dict(checkpoint["generator"])
-        discriminator.load_state_dict(checkpoint["discriminator"])
-        optimizer_g.load_state_dict(checkpoint["optimizer_g"])
-        optimizer_d.load_state_dict(checkpoint["optimizer_d"])
-        history = checkpoint.get("history", history)
         start_epoch = checkpoint["epoch"]
+        discriminator.load_state_dict(checkpoint["discriminator"])
         print(f"Continuing from '{RESUME_FROM}' (trained for {start_epoch} epochs so far)")
+        if "optimizer_g" in checkpoint:
+            # gan_model.pt also contains the optimizers' state, so the training continues exactly where it stopped
+            optimizer_g.load_state_dict(checkpoint["optimizer_g"])
+            optimizer_d.load_state_dict(checkpoint["optimizer_d"])
+            for optimizer in (optimizer_g, optimizer_d):
+                for group in optimizer.param_groups:
+                    group["lr"] = LEARNING_RATE   # use the learning rate from the settings, not the saved one
+            history = checkpoint.get("history", history)
     else:
         generator.apply(init_weights)
         discriminator.apply(init_weights)
@@ -319,8 +324,10 @@ def main():
             torch.save({**settings, "generator": generator.state_dict(), "discriminator": discriminator.state_dict(),
                         "optimizer_g": optimizer_g.state_dict(), "optimizer_d": optimizer_d.state_dict(),
                         "history": history}, output_dir / "gan_model.pt")
-            # a small copy of only the generator, kept for every SAVE_MODEL_EPOCHS (GANs can get worse again!)
-            torch.save({**settings, "generator": generator.state_dict()}, output_dir / "snapshots" / f"generator_{done:04d}.pt")
+            # a copy of both networks, kept for every SAVE_MODEL_EPOCHS (GANs can get worse again!).
+            # Usable with generate_gan.py and with RESUME_FROM.
+            torch.save({**settings, "generator": generator.state_dict(), "discriminator": discriminator.state_dict()},
+                       output_dir / "snapshots" / f"generator_{done:04d}.pt")
 
     print(f"Done. Model, samples and loss plot are in {output_dir}")
 
